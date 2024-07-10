@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: airbyte
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: "https://github.com/yogmangela/argocd.git"
+    targetRevision: HEAD
+    path: deployments/airbyte
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: airbyte
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airbyte
+  labels:
+    app: airbyte
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: airbyte
+  template:
+    metadata:
+      labels:
+        app: airbyte
+    spec:
+      containers:
+        - name: airbyte
+          image: airbyte/airbyte:latest
+          ports:
+            - containerPort: 8000
